@@ -43,4 +43,42 @@ const handleBookListController = async (req, res) => {
   } catch (error) {}
 };
 
-module.exports = { handleBookStoreController, handleBookListController };
+const handleBookDeleteController = async (req, res) => {
+  const body = req.body;
+  try {
+    const deleted = await Book.deleteOne({ _id: body.Id });
+    console.log("deleted", deleted);
+    if (deleted.acknowledged) {
+      return res.json({
+        message: "Book deleted successfully!",
+        Success: true,
+      });
+    }
+  } catch (error) {
+    return res.status(400).json({ message: error.message, Success: false });
+  }
+};
+
+const handleBookUpdateController = async (req, res) => {
+  const body = req.body;
+  try {
+    const updating = await Book.updateOne({ _id: body?._id }, { $set: body });
+    console.log("updating", updating);
+
+    if (updating?.acknowledged) {
+      return res.json({
+        message: "Book updated successfully!",
+        Success: true,
+      });
+    }
+  } catch (error) {
+    return res.status(400).json({ message: error.message, Success: false });
+  }
+};
+
+module.exports = {
+  handleBookStoreController,
+  handleBookListController,
+  handleBookDeleteController,
+  handleBookUpdateController,
+};
