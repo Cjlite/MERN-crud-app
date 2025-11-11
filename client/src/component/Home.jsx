@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { bookBaseUrl } from "../../exiosEnstance";
+import { MdDelete } from "react-icons/md";
+import { FaPen } from "react-icons/fa";
 
 const Home = () => {
   const [bookForm, setBookForm] = useState({
@@ -10,7 +12,7 @@ const Home = () => {
     PublishDate: "",
   });
   const [bookList, setBookList] = useState();
-  console.log("bookList--", bookList);
+  const [isUpdating, setIsupdating] = useState(false);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -24,7 +26,6 @@ const Home = () => {
     try {
       const { data } = await bookBaseUrl.get("bookLists");
       setBookList(data?.BookList);
-      console.log("Booklist", data);
     } catch (error) {
       console.log("Error:", error.message);
     }
@@ -36,32 +37,70 @@ const Home = () => {
 
   const handleSubmit = async () => {
     try {
-      if (
-        !bookForm.BookName ||
-        !bookForm.BookTitle ||
-        !bookForm.Author ||
-        !bookForm.SellingPrice
-      ) {
-        alert("All fields are require!");
-      }
+      if (!isUpdating) {
+        if (
+          !bookForm.BookName ||
+          !bookForm.BookTitle ||
+          !bookForm.Author ||
+          !bookForm.SellingPrice
+        ) {
+          alert("All fields are require!");
+        }
 
-      const { data } = await bookBaseUrl.post("addbook", bookForm);
-      if (data?.Success) {
-        alert(data?.message);
-        setBookForm({
-          BookName: "",
-          BookTitle: "",
-          Author: "",
-          SellingPrice: "",
-        });
+        const { data } = await bookBaseUrl.post("/addbook", bookForm);
+        if (data?.Success) {
+          alert(data?.message);
+          setBookForm({
+            BookName: "",
+            BookTitle: "",
+            Author: "",
+            SellingPrice: "",
+          });
+        }
+        console.log("Book added successfully:", data);
+        getAllBookList();
+      } else {
+        const { data } = await bookBaseUrl.put("/updatebook", bookForm);
+        if (data?.Success) {
+          alert(data?.message);
+          setBookForm({
+            BookName: "",
+            BookTitle: "",
+            Author: "",
+            SellingPrice: "",
+          });
+          setIsupdating(false);
+        }
       }
-      console.log("Book added successfully:", data);
     } catch (error) {
       console.log(error);
     }
   };
 
-  console.log("bookform", bookForm);
+  const hendleDelete = async (id) => {
+    try {
+      const data = await bookBaseUrl.post("deletebook", {
+        Id: id,
+      });
+      if (data?.Success) {
+        alert(data?.message);
+      }
+      getAllBookList();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleUpdate = async (data) => {
+    setBookForm({
+      BookName: data?.BookName,
+      BookTitle: data?.Booktitle,
+      Author: data?.Author,
+      SellingPrice: data?.SellingPrice,
+      PublishDate: data?.PublishDate,
+    });
+    setIsupdating(true);
+  };
 
   return (
     <div className="w-full px-5 min-h[cal(100vh-60px)]">
@@ -159,20 +198,39 @@ const Home = () => {
             <tbody className="text-white divide-y divide-gray-200">
               {bookList?.map((book, index) => (
                 <tr className="hover:bg-gray-200" key={index}>
-                  <td className="px-6 py-3 whitespace-nowrap">
+                  <td className="px-6 py-3 whitespace-nowrap text-gray-600">
                     {book.BookName}
                   </td>
-                  <td className="px-6 py-3 whitespace-nowrap">
+                  <td className="px-6 py-3 whitespace-nowrap text-gray-600">
                     {book.BookTitle}
                   </td>
-                  <td className="px-6 py-3 whitespace-nowrap">{book.Author}</td>
-                  <td className="px-6 py-3 whitespace-nowrap">
+                  <td className="px-6 py-3 whitespace-nowrap text-gray-600">
+                    {book.Author}
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap text-gray-600">
                     {book.SellingPrice}
                   </td>
-                  <td className="px-6 py-3 whitespace-nowrap">
+                  <td className="px-6 py-3 whitespace-nowrap text-gray-600">
                     {book.PublishDate}
                   </td>
-                  <td className="px-6 py-3 whitespace-nowrap">Action</td>
+                  <td className="px-6 py-3 whitespace-nowrap">
+                    <div
+                      className="w-20 flex justify-center gap-5"
+                      onClick={() => hendleDelete(book._id)}
+                    >
+                      <span className="h-8 w-5 flex justify-center items-center bg-red-50 text-red-600 cursor-pointer">
+                        <MdDelete />
+                      </span>
+                    </div>
+                    <div
+                      className="w-20 flex justify-center gap-5"
+                      onClick={() => handleUpdate(book)}
+                    >
+                      <span className="h-8 w-5 flex justify-center items-center bg-green-100 text-green-600 cursor-pointer">
+                        <FaPen />
+                      </span>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
