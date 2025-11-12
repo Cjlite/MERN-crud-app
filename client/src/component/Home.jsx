@@ -50,6 +50,7 @@ const Home = () => {
         const { data } = await bookBaseUrl.post("/addbook", bookForm);
         if (data?.Success) {
           alert(data?.message);
+          getAllBookList();
           setBookForm({
             BookName: "",
             BookTitle: "",
@@ -63,11 +64,13 @@ const Home = () => {
         const { data } = await bookBaseUrl.put("/updatebook", bookForm);
         if (data?.Success) {
           alert(data?.message);
+          getAllBookList();
           setBookForm({
             BookName: "",
             BookTitle: "",
             Author: "",
             SellingPrice: "",
+            PublishDate: "",
           });
           setIsupdating(false);
         }
@@ -93,8 +96,9 @@ const Home = () => {
 
   const handleUpdate = async (data) => {
     setBookForm({
+      _id: data?._id,
       BookName: data?.BookName,
-      BookTitle: data?.Booktitle,
+      BookTitle: data?.BookTitle,
       Author: data?.Author,
       SellingPrice: data?.SellingPrice,
       PublishDate: data?.PublishDate,
@@ -214,21 +218,20 @@ const Home = () => {
                     {book.PublishDate}
                   </td>
                   <td className="px-6 py-3 whitespace-nowrap">
-                    <div
-                      className="w-20 flex justify-center gap-5"
-                      onClick={() => hendleDelete(book._id)}
-                    >
-                      <span className="h-8 w-5 flex justify-center items-center bg-red-50 text-red-600 cursor-pointer">
-                        <MdDelete />
-                      </span>
-                    </div>
-                    <div
-                      className="w-20 flex justify-center gap-5"
-                      onClick={() => handleUpdate(book)}
-                    >
-                      <span className="h-8 w-5 flex justify-center items-center bg-green-100 text-green-600 cursor-pointer">
+                    <div className="flex items-center gap-3 justify-center">
+                      <button
+                        onClick={() => handleUpdate(book)}
+                        className="flex justify-center items-center h-8 w-8 rounded bg-green-100 text-green-600 hover:bg-green-200"
+                      >
                         <FaPen />
-                      </span>
+                      </button>
+
+                      <button
+                        onClick={() => hendleDelete(book._id)}
+                        className="flex justify-center items-center h-8 w-8 rounded bg-red-100 text-red-600 hover:bg-red-200"
+                      >
+                        <MdDelete />
+                      </button>
                     </div>
                   </td>
                 </tr>
